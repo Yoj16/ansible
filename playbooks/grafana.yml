@@ -1,0 +1,5 @@
+- name: Déploiement de Grafana uniquement
+  hosts: monitoring
+  become: yes
+  roles:
+    - grafana

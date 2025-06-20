@@ -1,0 +1,5 @@
+- name: Déploiement de Loki uniquement
+  hosts: monitoring
+  become: yes
+  roles:
+    - loki

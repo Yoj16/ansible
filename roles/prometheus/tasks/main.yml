@@ -1,0 +1,53 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for prometheus
+- name: Download Prometheus
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.51.2/prometheus-2.51.2.linux-amd64.tar.gz
+    dest: /tmp/prometheus.tar.gz
+
+- name: Extract Prometheus
+  ansible.builtin.unarchive:
+    src: /tmp/prometheus.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Symlink binaries
+  ansible.builtin.file:
+    src: "/opt/prometheus-2.51.2.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  loop:
+    - prometheus
+    - promtool
+
+- name: Copy configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus.yml
+
+- name: Create systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/local/bin/prometheus --config.file=/etc/prometheus.yml
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start Prometheus
+  ansible.builtin.systemd:
+    name: prometheus
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Display Prometheus URL
+  ansible.builtin.debug:
+    msg: "Prometheus is available at http://{{ ansible_host }}:{{ prometheus_port }} (connect with admin/admin)"

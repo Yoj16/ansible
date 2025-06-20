@@ -1,0 +1,50 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for loki
+- name: Download Loki
+  ansible.builtin.get_url:
+    url: https://github.com/grafana/loki/releases/download/v2.9.3/loki-linux-amd64.zip
+    dest: /tmp/loki.zip
+
+- name: Install unzip
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
+- name: Extract Loki
+  ansible.builtin.unarchive:
+    src: /tmp/loki.zip
+    dest: /usr/local/bin/
+    remote_src: yes
+
+- name: Make executable
+  ansible.builtin.file:
+    path: /usr/local/bin/loki-linux-amd64
+    mode: '0755'
+
+- name: Copy Loki config
+  ansible.builtin.template:
+    src: loki-config.yaml.j2
+    dest: /etc/loki-config.yaml
+
+- name: Create Loki systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/loki.service
+    content: |
+      [Unit]
+      Description=Loki
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/local/bin/loki-linux-amd64 -config.file=/etc/loki-config.yaml
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start Loki
+  ansible.builtin.systemd:
+    name: loki
+    enabled: yes
+    state: started
+    daemon_reload: yes

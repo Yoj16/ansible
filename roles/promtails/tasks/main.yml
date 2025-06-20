@@ -1,0 +1,43 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for promtails
+- name: Créer l'utilisateur promtail
+  ansible.builtin.user:
+    name: promtail
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: Créer les répertoires nécessaires
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: promtail
+    group: promtail
+    mode: '0755'
+  loop:
+    - /etc/promtail
+    - /var/lib/promtail
+
+- name: Télécharger Promtail
+  ansible.builtin.get_url:
+    url: https://github.com/grafana/loki/releases/download/v2.9.4/promtail-linux-amd64.zip
+    dest: /tmp/promtail.zip
+
+- name: Installer unzip si nécessaire
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Décompresser promtail
+  ansible.builtin.unarchive:
+    src: /tmp/promtail.zip
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
+
+- name: Copier le fichier de configuration
+  ansible.builtin.template:
+    src: promtail-config.yml.j2
+    dest: /etc/promtail

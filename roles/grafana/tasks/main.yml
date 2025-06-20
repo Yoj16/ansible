@@ -1,0 +1,29 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for grafana
+
+- name: Add Grafana APT key
+  ansible.builtin.apt_key:
+    url: "{{ grafana_apt_key_url }}"
+    state: present
+
+- name: Add Grafana repo
+  ansible.builtin.apt_repository:
+    repo: "{{ grafana_repo }}"
+    state: present
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+    update_cache: yes
+
+- name: Ensure Grafana is started
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: yes
+    state: started
+
+- name: Display Grafana URL
+  ansible.builtin.debug:
+    msg: "Grafana is available at http://{{ ansible_host }}:{{ grafana_port }} (connect with admin/admin)"

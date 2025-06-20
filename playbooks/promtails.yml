@@ -1,0 +1,5 @@
+- name: Déploiement de Promtails uniquement
+  hosts: monitoring
+  become: yes
+  roles:
+    - promtails

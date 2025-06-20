@@ -1,0 +1,5 @@
+- name: Déploiement de Prometheus uniquement
+  hosts: monitoring
+  become: yes
+  roles:
+    - prometheus

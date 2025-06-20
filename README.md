@@ -41,6 +41,7 @@ Deploy individual components:
 ansible-playbook -i inventories/host.ini playbooks/prometheus.yml
 ansible-playbook -i inventories/host.ini playbooks/grafana.yml
 ansible-playbook -i inventories/host.ini playbooks/loki.yml
+ansible-playbook -i inventories/host.ini playbooks/promtails.yml
 ```
 
 Components

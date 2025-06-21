@@ -1,50 +1,54 @@
-#SPDX-License-Identifier: MIT-0
----
-# tasks file for loki
-- name: Download Loki
-  ansible.builtin.get_url:
-    url: https://github.com/grafana/loki/releases/download/v2.9.3/loki-linux-amd64.zip
-    dest: /tmp/loki.zip
+- name: Renommer le binaire Loki
+  ansible.builtin.command: mv /usr/local/bin/loki-linux-amd64 /usr/local/bin/loki
+  args:
+    creates: /usr/local/bin/loki
 
-- name: Install unzip
-  ansible.builtin.apt:
-    name: unzip
-    state: present
-
-- name: Extract Loki
-  ansible.builtin.unarchive:
-    src: /tmp/loki.zip
-    dest: /usr/local/bin/
-    remote_src: yes
-
-- name: Make executable
+- name: Créer les répertoires de données pour Loki
   ansible.builtin.file:
-    path: /usr/local/bin/loki-linux-amd64
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /var/log/loki
+    - /var/log/loki/index
+    - /var/log/loki/boltdb-cache
+    - /var/log/loki/chunks
+
+
+- name: Créer le dossier de conf de Loki
+  ansible.builtin.file:
+    path: /etc/loki
+    state: directory
+    owner: root
+    group: root
     mode: '0755'
 
-- name: Copy Loki config
+- name: Copier la configuration de Loki
   ansible.builtin.template:
-    src: loki-config.yaml.j2
-    dest: /etc/loki-config.yaml
+    src: loki-config.yaml
+    dest: /etc/loki/loki-config.yaml
+    mode: '0644'
 
-- name: Create Loki systemd service
+- name: Créer le service systemd Loki
   ansible.builtin.copy:
     dest: /etc/systemd/system/loki.service
     content: |
       [Unit]
-      Description=Loki
+      Description=Loki service
       After=network.target
 
       [Service]
-      ExecStart=/usr/local/bin/loki-linux-amd64 -config.file=/etc/loki-config.yaml
+      ExecStart=/usr/local/bin/loki -config.file=/etc/loki/loki-config.yaml
       Restart=always
 
       [Install]
       WantedBy=multi-user.target
 
-- name: Start Loki
+- name: Redémarrer Loki
   ansible.builtin.systemd:
     name: loki
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes

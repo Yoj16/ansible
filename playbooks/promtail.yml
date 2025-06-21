@@ -2,4 +2,4 @@
   hosts: monitoring
   become: yes
   roles:
-    - promtails
+    - promtail

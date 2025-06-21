@@ -41,7 +41,7 @@ Deploy individual components:
 ansible-playbook -i inventories/host.ini playbooks/prometheus.yml
 ansible-playbook -i inventories/host.ini playbooks/grafana.yml
 ansible-playbook -i inventories/host.ini playbooks/loki.yml
-ansible-playbook -i inventories/host.ini playbooks/promtails.yml
+ansible-playbook -i inventories/host.ini playbooks/promtail.yml
 ```
 
 Components
@@ -61,6 +61,7 @@ Project Structure
 │   ├── grafana.yml      # Grafana deployment playbook
 │   ├── loki.yml         # Loki deployment playbook
 │   └── prometheus.yml   # Prometheus deployment playbook
+│   └── promtail.yml     # Promtail deployment playbook
 ├── roles/
 │   ├── grafana/         # Grafana role
 │   ├── loki/            # Loki role
@@ -72,9 +73,10 @@ Project Structure
 Access
 ------
 
-- Prometheus: http://<server-ip>:9090
+- Prometheus: http://<server-ip>:9090/metrics
 - Grafana: http://<server-ip>:3000 (Default login: admin/admin)
 - Loki: http://<server-ip>:3100
+- Promatil: http://<server-ip>:9080/targets
 
 License
 -------
